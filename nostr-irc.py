@@ -69,7 +69,12 @@ async def subscribe_to_notes(uri, time_since, messages):
 
 async def update_status_bar(relay, status_bar):
     while True:
+        status_bar.clear()
+        y, x = status_bar.getmaxyx()
+        timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
         status_bar.addstr(0, 0, f"Connected to: {relay}")
+        status_bar.addstr(0, x//2-len("Nostr IRC")//2, "Nostr IRC")
+        status_bar.addstr(0, x-len(timestamp)-1, timestamp)
         status_bar.refresh()
         await asyncio.sleep(1)
 
@@ -83,7 +88,7 @@ async def main_task(relay, status_bar, time_since, messages):
 def main(stdscr):
     status_bar, messages, input_line = run_curses(stdscr)
     time_since = int(time.time()) - (60 * 60 * 24 * search_days)
-    relay = "wss://relay.damus.io"
+    relay = "wss://nos.lol"
     asyncio.run(main_task(relay, status_bar, time_since, messages))
 
 if __name__ == "__main__":
