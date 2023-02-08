@@ -8,6 +8,7 @@ version = "0.0.2"
 import asyncio, curses, datetime, json, time, websockets
 
 search_days = 1
+nip_05_identifiers = []
 
 def run_curses(stdscr):
     stdscr.clear()
@@ -15,6 +16,7 @@ def run_curses(stdscr):
     curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
     curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)
     curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)
+    curses.init_pair(4, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
 
     status_bar = curses.newwin(1, curses.COLS, 0, 0)
     status_bar.bkgd(" ", curses.color_pair(2))
@@ -48,11 +50,22 @@ async def subscribe_to_notes(uri, time_since, messages):
                 event_content = message[2]["content"]
                 event_time = message[2]["created_at"]
                 if last_event_time is None or event_time > last_event_time:
+                    if pubkey not in nip_05_identifiers:
+                        # NIP-05 lookup for new pubkeys
+                        # Replace this with your NIP-05 name lookup code
+                        pair_value = 4
+                        nip_05_identifier = "Some NIP-05 Identifier" 
+                        nip_05_identifiers.append(pubkey)
+                    else:
+                        pair_value = 3
+                        nip_05_identifier = ""
+
                     timestamp = f"[{local_timestamp}] "
                     messages.addstr(str(timestamp), curses.color_pair(1) | curses.COLOR_WHITE | curses.A_BOLD)
 
-                    pubkey = f"<{pubkey}>"
-                    messages.addstr(str(pubkey), curses.color_pair(3) | curses.A_BOLD)
+                    display_identifier = f"<{nip_05_identifier}>" if nip_05_identifier else f"<{pubkey}>"
+                    #pubkey = f"<{pubkey}>"
+                    messages.addstr(str(display_identifier), curses.color_pair(pair_value) | curses.A_BOLD)
 
                     event_content = f": {event_content}"
                     messages.addstr(str(event_content) + "\n")
@@ -73,7 +86,7 @@ async def update_status_bar(relay, status_bar):
         y, x = status_bar.getmaxyx()
         timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
         status_bar.addstr(0, 0, f"Connected to: {relay}")
-        status_bar.addstr(0, x//2-len("Nostr IRC")//2, "Nostr IRC")
+        status_bar.addstr(0, x//2-len("nostr-irc")//2, "nostr-irc")
         status_bar.addstr(0, x-len(timestamp)-1, timestamp)
         status_bar.refresh()
         await asyncio.sleep(1)
@@ -88,7 +101,7 @@ async def main_task(relay, status_bar, time_since, messages):
 def main(stdscr):
     status_bar, messages, input_line = run_curses(stdscr)
     time_since = int(time.time()) - (60 * 60 * 24 * search_days)
-    relay = "wss://nos.lol"
+    relay = "wss://relay.stoner.com"
     asyncio.run(main_task(relay, status_bar, time_since, messages))
 
 if __name__ == "__main__":
