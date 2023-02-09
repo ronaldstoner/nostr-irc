@@ -12,7 +12,7 @@ import asyncio, curses, datetime, json, time, websockets, uuid
 scroll_index = 0
 scroll_buffer = 5000
 client_uuid = uuid.uuid1()
-ping_keepalive = 10        # Ping keep alive time
+ping_keepalive = 60        # Ping keep alive time
 pubkey_filter_list = ["11111"]
 event_filter_list = ["damuspeaker", 
                     "damuspeak", 
@@ -39,7 +39,10 @@ event_filter_list = ["damuspeaker",
                     "https://airdrop.eventimtoken.com.cn",
                     "https://t.me/chigualixing",
                     "https://nostr.build/i/nostr.build",
-                    "https://bit.ly/3JGAYU7"
+                    "https://bit.ly/3JGAYU7",
+                    "https://markdown.isab.run/avatar/",
+                    "https://bit.ly/3JGAYU7",
+                    "\n\n\nKeep going!"
                     ]
 
 def run_curses(stdscr):
@@ -69,89 +72,96 @@ nip_05_identifiers = {}
 async def subscribe_to_notes(uri, time_since, messages, client_uuid):
     global scroll_index
     while True:
-        try:
-            async with websockets.connect(uri) as websocket_notes:
-                search_filter = {
-                    "kinds": [1],
-                    "since": time_since
-                    # "until": int(time.time())
-                }
-                await websocket_notes.send(json.dumps(["REQ", "nostr-irc-" + str(client_uuid), search_filter]))
-                last_event_time = None
+        #try:
+        async with websockets.connect(uri) as websocket_notes:
+            async def keepalive():
                 while True:
-                    reply = await websocket_notes.recv()
-                    message = json.loads(reply)
-                    if "EOSE" not in message:
-                        local_timestamp = datetime.datetime.fromtimestamp(message[2]["created_at"]).strftime("%Y-%m-%d %H:%M:%S")
-                        pubkey = message[2]["pubkey"]
-                        event_content = message[2]["content"]
-                        event_time = message[2]["created_at"]
-                        if pubkey not in pubkey_filter_list and not any(f in event_content for f in event_filter_list):
+                    await websocket_notes.ping()
+                    await asyncio.sleep(ping_keepalive)
 
-                            nip_05_identifier = nip_05_identifiers.get(pubkey)
+            keepalive_task = asyncio.create_task(keepalive())
 
-                            #messages.addstr(f"\n ! NIP05 Lookup: pub: {pubkey}  name: {nip_05_identifier}")
+            search_filter = {
+                "kinds": [1],
+                "since": time_since
+                # "until": int(time.time())
+            }
+            await websocket_notes.send(json.dumps(["REQ", "nostr-irc-" + str(client_uuid), search_filter]))
+            last_event_time = None
+            while True:
+                reply = await websocket_notes.recv()
+                message = json.loads(reply)
+                if "EOSE" not in message:
+                    local_timestamp = datetime.datetime.fromtimestamp(message[2]["created_at"]).strftime("%Y-%m-%d %H:%M:%S")
+                    pubkey = message[2]["pubkey"]
+                    event_content = message[2]["content"]
+                    event_time = message[2]["created_at"]
+                    if pubkey not in pubkey_filter_list and not any(f in event_content for f in event_filter_list):
 
-                            if nip_05_identifier is None:
-                                async with websockets.connect(uri) as websocket_metadata:
-                                    search_filter = {
-                                        "kinds": [0],
-                                        "authors": [pubkey]
-                                    }
-                                    request = json.dumps(["REQ", "nostr-irc-nip05" + pubkey, search_filter])
-                                    #messages.addstr(str("Request: " + request))
+                        nip_05_identifier = nip_05_identifiers.get(pubkey)
 
-                                    await websocket_metadata.send(request)
-                                    pubkey_metadata_reply = await websocket_metadata.recv()
-                                    #messages.addstr(str("\n Reply: " + pubkey_metadata_reply))
+                        #messages.addstr(f"\n ! NIP05 Lookup: pub: {pubkey}  name: {nip_05_identifier}")
 
-                                    await websocket_metadata.send(json.dumps(["CLOSE", "nostr-irc-nip05" + pubkey]))
-                                    pubkey_metadata_close = await websocket_metadata.recv()
-                                    #messages.addstr(str("\n Reply: " + pubkey_metadata_close))
-                                    
-                                    pubkey_metadata = json.loads(pubkey_metadata_reply)
+                        if nip_05_identifier is None:
+                            async with websockets.connect(uri) as websocket_metadata:
+                                search_filter = {
+                                    "kinds": [0],
+                                    "authors": [pubkey]
+                                }
+                                request = json.dumps(["REQ", "nostr-irc-nip05" + pubkey, search_filter])
+                                #messages.addstr(str("Request: " + request))
 
-                                    try:
-                                        name_metadata = str(pubkey_metadata[2]['content'])
-                                        json_acceptable_string = name_metadata.replace("'", "\"")
-                                        d = json.loads(json_acceptable_string)
-                                        name = d['name']
+                                await websocket_metadata.send(request)
+                                pubkey_metadata_reply = await websocket_metadata.recv()
+                                #messages.addstr(str("\n Reply: " + pubkey_metadata_reply))
 
-                                        nip_05_identifier = name
-                                        nip_05_identifiers[pubkey] = nip_05_identifier
-                                    except:
-                                        nip_05_identifier = pubkey[-8:]
+                                await websocket_metadata.send(json.dumps(["CLOSE", "nostr-irc-nip05" + pubkey]))
+                                pubkey_metadata_close = await websocket_metadata.recv()
+                                #messages.addstr(str("\n Reply: " + pubkey_metadata_close))
+                                
+                                pubkey_metadata = json.loads(pubkey_metadata_reply)
 
-                            #messages.addstr(f"[{local_timestamp}] {display_identifier}: {event_content}\n")
-                            messages.addstr(f"[{local_timestamp}] ", curses.color_pair(1) | curses.COLOR_WHITE | curses.A_BOLD)
+                                try:
+                                    name_metadata = str(pubkey_metadata[2]['content'])
+                                    json_acceptable_string = name_metadata.replace("'", "\"")
+                                    d = json.loads(json_acceptable_string)
+                                    name = d['name']
 
-                            #messages.addstr(f" <{display_identifier}>: ")
-                            messages.addstr(f"<{nip_05_identifier}>: ", curses.color_pair(3) | curses.A_BOLD)
+                                    nip_05_identifier = name
+                                    nip_05_identifiers[pubkey] = nip_05_identifier
+                                except:
+                                    nip_05_identifier = pubkey[-8:]
 
-                            #event_content = f": {event_content}"
-                            messages.addstr(str(event_content) + "\n")
+                        #messages.addstr(f"[{local_timestamp}] {display_identifier}: {event_content}\n")
+                        messages.addstr(f"[{local_timestamp}] ", curses.color_pair(1) | curses.COLOR_WHITE | curses.A_BOLD)
 
-                            messages.refresh()
-                            last_event_time = event_time
-                            pubkey_metadata_reply = ""
+                        #messages.addstr(f" <{display_identifier}>: ")
+                        messages.addstr(f"<{nip_05_identifier}>: ", curses.color_pair(3) | curses.A_BOLD)
 
-                    # else:
-                    #     time_since = last_event_time if last_event_time is not None else int(time.time())
-                    #     search_filter = {
-                    #         "kinds": [1],
-                    #         "since": time_since,
-                    #         "until": int(time.time())
-                    #     }
-                    #     await websocket_notes.send(json.dumps(["REQ", "nostr-irc", search_filter]))
-        except asyncio.TimeoutError:
-            async with websockets.connect(uri, ping_interval=ping_keepalive) as websocket_notes:
-                search_filter = {
-                    "kinds": [1],
-                    "since": time_since
-                    # "until": int(time.time())
-                }
-                await websocket_notes.send(json.dumps(["REQ", "nostr-irc-" + str(client_uuid), search_filter]))
-                break
+                        #event_content = f": {event_content}"
+                        messages.addstr(str(event_content) + "\n")
+
+                        messages.refresh()
+                        last_event_time = event_time
+                        pubkey_metadata_reply = ""
+
+                # else:
+                #     time_since = last_event_time if last_event_time is not None else int(time.time())
+                #     search_filter = {
+                #         "kinds": [1],
+                #         "since": time_since,
+                #         "until": int(time.time())
+                #     }
+                #     await websocket_notes.send(json.dumps(["REQ", "nostr-irc", search_filter]))
+    # except asyncio.TimeoutError:
+    #     async with websockets.connect(uri, ping_interval=ping_keepalive) as websocket_notes:
+    #         search_filter = {
+    #             "kinds": [1],
+    #             "since": time_since
+    #             # "until": int(time.time())
+    #         }
+    #         await websocket_notes.send(json.dumps(["REQ", "nostr-irc-" + str(client_uuid), search_filter]))
+    #         break
 
 async def update_status_bar(relay, status_bar):
     while True:
