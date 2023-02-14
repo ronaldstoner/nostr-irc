@@ -14,8 +14,6 @@ scroll_buffer = 5000
 client_uuid = uuid.uuid1()
 ping_keepalive = 30        # Ping keep alive time
 ping_timeout = 10 
-pubkey_filter_list = ["11111"]
-
 nip_05_resolution = True
 
 def load_event_filters():
@@ -29,6 +27,17 @@ def load_event_filters():
     except Exception as e:
         print("Could not load event filter list - ", e)
     return event_filter_list
+
+def load_pubkey_filters():
+    try:
+        pubkey_filter_list = []
+        with open("pubkey.filters", "r") as file:
+            for line in file:
+                line = line.strip()
+                pubkey_filter_list.append(line)
+    except Exception as e:
+        print("Could not load pubkey filter list - ", e)
+    return pubkey_filter_list
 
 def run_curses(stdscr):
     global status_bar
@@ -63,9 +72,9 @@ async def get_nip05(pubkey, uri):
         "authors": [pubkey]
     }
 
-    async with websockets.connect(uri) as websocket_metadata:
-        try:
-            request = json.dumps(["REQ", "irc-nip05-" + pubkey[-8:], search_filter_nip05])
+    try:
+        async with websockets.connect(uri) as websocket_metadata:
+            request = json.dumps(["REQ", "irc-nip05-" + pubkey[:8], search_filter_nip05])
             #messages.addstr(str("Request: " + request))
 
             await websocket_metadata.send(request)
@@ -87,17 +96,18 @@ async def get_nip05(pubkey, uri):
                 nip_05_identifier = name
                 nip_05_identifiers[pubkey] = nip_05_identifier
 
-                await websocket_metadata.send(json.dumps(["CLOSE", "irc-nip05-" + pubkey[-8:]]))
+                await websocket_metadata.send(json.dumps(["CLOSE", "irc-nip05-" + pubkey[:8]]))
                 pubkey_metadata_close = await websocket_metadata.recv()
                 #messages.addstr(str("\n Reply: " + pubkey_metadata_close))
             else:
-                nip_05_identifier = pubkey[-10:]
-                await websocket_metadata.send(json.dumps(["CLOSE", "irc-nip05-" + pubkey[-8:]]))
+                nip_05_identifier = pubkey
+                await websocket_metadata.send(json.dumps(["CLOSE", "irc-nip05-" + pubkey[:8]]))
                 pubkey_metadata_close = await websocket_metadata.recv()
                 #messages.addstr(str("\n Reply: " + pubkey_metadata_close))
-        except Exception as e:
-            nip_05_identifier = pubkey[-24:]
-            messages.addstr(str(f"EXCEPTION!!! {e}"))
+    except Exception as e:
+        nip_05_identifier = pubkey
+        #messages.addstr(str(f"EXCEPTION!!! {e}"))
+
     pubkey_metadata_close = None
     pubkey_metadata_reply = None
     pubkey_metadata = None
@@ -110,19 +120,8 @@ async def subscribe_to_notes(uri, time_since, messages, client_uuid):
     global scroll_index
     global nip_05_identifier
     event_filter_list = load_event_filters()
+    pubkey_filter_list = load_pubkey_filters()
     while True:
-        async with websockets.connect(uri, ping_interval=ping_keepalive, ping_timeout=ping_timeout) as websocket_notes:
-            async def keepalive():
-                while True:
-                    await websocket_notes.ping()
-                    await asyncio.sleep(ping_keepalive)
-
-            keepalive_task = asyncio.create_task(keepalive())
-
-            search_filter = {
-                "kinds": [1],
-                "since": time_since
-            }
         try:
             async with websockets.connect(uri, ping_interval=ping_keepalive, ping_timeout=ping_timeout) as websocket_notes:
                 async def keepalive():
@@ -153,39 +152,44 @@ async def subscribe_to_notes(uri, time_since, messages, client_uuid):
 
                             if nip_05_identifier is None and nip_05_resolution is True:
 
-                                # nip05_tasks = [
-                                #     asyncio.create_task(get_nip05(pubkey, uri))
-
-                                # ]
-                                # nip_05_identifier = await asyncio.gather(*nip05_tasks)
-
                                 # Wait for a future websocket response
                                 future = asyncio.ensure_future(get_nip05(pubkey, uri))
 
                                 # Wait for the result of the Future
                                 try:
-                                    result = await asyncio.wait_for(future, timeout=3)
-                                    nip_05_identifier = result
-                                except:
-                                    nip_05_identifier = pubkey[-8:]
-
+                                    result = await asyncio.wait_for(future, timeout=2)
+                                    if result is not None:
+                                        nip_05_identifier = result
+                                        color_pair = 4
+                                    else:
+                                        nip_05_identifier = pubkey[:8]
+                                        color_pair = 3
+                                except Exception as e:
+                                    nip_05_identifier = pubkey[:8]
+                                    color_pair = 3
+                                    #messages.addstr(str(f"EXCEPTION! {e}\n"))
                             else:
-                                nip_05_identifier = pubkey[-8:]
+                                if nip_05_identifiers[pubkey] == pubkey[:8]:
+                                    color_pair = 3
+                                else:
+                                    color_pair = 4
+
+                            nip_05_identifiers[pubkey] = nip_05_identifier
 
                             messages.addstr(f"[{local_timestamp}] ", curses.color_pair(1) | curses.COLOR_WHITE | curses.A_BOLD)
-                            messages.addstr(f"<{nip_05_identifier}>: ", curses.color_pair(3) | curses.A_BOLD)
+                            messages.addstr(f"<{nip_05_identifier}>: ", curses.color_pair(color_pair) | curses.A_BOLD)
                             messages.addstr(str(event_content) + "\n")
                             messages.refresh()
                             
                             last_event_time = event_time
                             reply = None
+                            result = None
                             message = None
                             pubkey = None
                             event_content = None
                             event_time = None
                             nip_05_identifier = None      
-                            #pubkey_metadata_reply = ""
-
+ 
         except websockets.exceptions.ConnectionClosedError as e:
             # handle the exception
             messages.addstr(f"Error: {e}")
@@ -213,7 +217,7 @@ async def main_task(relay, status_bar, time_since, messages, client_uuid):
 
 def main(stdscr):
     status_bar, messages, input_line = run_curses(stdscr)
-    time_since = int(time.time()) # - (60 * 60 * 24 * search_days)
+    time_since = int(time.time()) #- (60 * 60 * 24 * search_days)
     #relay = "wss://relay.stoner.com"
     relay = "wss://relay.damus.io"
     asyncio.run(main_task(relay, status_bar, time_since, messages, client_uuid))
