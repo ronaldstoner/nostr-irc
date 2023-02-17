@@ -2,7 +2,7 @@ import asyncio
 import json
 import websockets
 
-nip_05_indentifiers = {}
+nip_05_identifiers = {}
 
 async def get_nip05(pubkey, uri):
     search_filter_nip05 = {
