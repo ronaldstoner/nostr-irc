@@ -2,7 +2,7 @@ import asyncio, curses, datetime, json, re, time, websockets
 
 from invoice import decode_lightning_invoice
 from filters import load_event_filters, load_pubkey_filters
-from nip02 import get_nip02_friends 
+from nip02 import get_nip02_friends
 from nip05 import get_nip05, nip_05_identifiers
 
 # Assign initial values to the variables
@@ -50,7 +50,7 @@ async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uui
 
                     # If the message is not End of Subscription and not blank
                     if "EOSE" not in message and message is not None:
-                        local_timestamp = datetime.datetime.fromtimestamp(message[2]["created_at"]).strftime("%Y-%m-%d %H:%M:%S")
+                        local_timestamp = datetime.datetime.fromtimestamp(message[2]["created_at"]).strftime("%H:%M:%S")
                         pubkey = message[2]["pubkey"]
                         event_content = message[2]["content"]
                         event_time = message[2]["created_at"]
@@ -81,7 +81,7 @@ async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uui
                                     color_pair = 3
                                 else:
                                     color_pair = 4
- 
+
                             # Get NIP05 Name via Relay
                             nip_05_identifiers[pubkey] = nip_05_identifier
 
