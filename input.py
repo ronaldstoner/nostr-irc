@@ -3,6 +3,7 @@ import curses
 
 
 async def get_user_input(input_box, messages, status_bar):
+    loop = asyncio.get_running_loop()
     user_input = ""
     # Move the cursor to the end of the input title
     input_box.move(0, len("<you>: "))
@@ -40,7 +41,7 @@ async def get_user_input(input_box, messages, status_bar):
     # It does work, but requires the user to press Enter to break out of the while true loop 
     while True:
         #messages.addstr("IN THE KB LOOP")
-        key = input_box.getch()
+        key = await loop.run_in_executor(None, input_box.getch)
         #if key:
         #    messages.addstr("KEY PRESSED")
         if key == 10:
