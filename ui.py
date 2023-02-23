@@ -25,7 +25,7 @@ class UI:
         self.input_line.addstr(0, 0, input_title, curses.A_BOLD)
         self.input_line.refresh()
 
-        self.input_box = curses.newwin(1, 0, curses.LINES - 1, input_title_length)
+        self.input_box = curses.newwin(1, curses.COLS, curses.LINES - 1, input_title_length)
         self.input_box.bkgd(" ", curses.color_pair(2))
         self.input_box.refresh()
 

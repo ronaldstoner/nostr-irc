@@ -3,10 +3,10 @@
 # Project:      nostr-irc
 # Members:      ronaldstoner
 #
-version = "0.0.4.1"
+version = "0.0.4.2"
 
 # Imports - packages
-import asyncio, curses, time, uuid
+import argparse, asyncio, curses, secrets, time, uuid
 
 # Imports - local
 import ui
@@ -34,9 +34,9 @@ def main(stdscr):
     ui_obj = ui.UI()
     status_bar, messages, input_title, input_line, input_box = ui_obj.run_curses(stdscr)
     time_since = int(time.time()) #- (60 * 60 * 24 * search_days)
-    #relay = "wss://relay.stoner.com"
-    #relay = "wss://relay.damus.io"
-    relay = "wss://nos.lol"
+    relay = args.relay if args.relay else "wss://nos.lol"
+    # Load privkey from args, but if not generate a random key for chatting
+    privkey = args.privatekey if args.privatekey is not None else secrets.token_bytes(32)
 
     # Get friendlist
     # Uses my pubkey as example for now
@@ -44,16 +44,16 @@ def main(stdscr):
     friendlist = asyncio.run(get_nip02_friends(relay, my_pubkey, messages))
 
     # Call the main_task function with the friendlist
-    asyncio.run(main_task(relay, status_bar, my_pubkey, time_since, messages, input_box, client_uuid, friendlist))
+    asyncio.run(main_task(relay, status_bar, my_pubkey, privkey, time_since, messages, input_box, client_uuid, friendlist))
 
 
 # asyncio task gather and handler
-async def main_task(relay, status_bar, my_pubkey, time_since, messages, input_box, client_uuid, friendlist):
+async def main_task(relay, status_bar, my_pubkey, privkey, time_since, messages, input_box, client_uuid, friendlist):
 
     tasks = [
         asyncio.create_task(update_status_bar(relay, status_bar)),
         asyncio.create_task(subscribe_to_notes(relay, status_bar, time_since, messages, client_uuid, friendlist)),
-        asyncio.create_task(get_user_input(input_box, messages, status_bar))
+        asyncio.create_task(get_user_input(input_box, privkey, messages, status_bar))
     ]
 
     try:
@@ -67,4 +67,10 @@ async def main_task(relay, status_bar, my_pubkey, time_since, messages, input_bo
 
 # main curses wrapper
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description="nostr-irc")
+    parser.add_argument("-p", "--privatekey", help="The private key for signing messages in hex format")
+    parser.add_argument("-r", "--relay", help="The secure websocket relay to use (e.g. wss://nos.lol)")
+
+    args = parser.parse_args()
     curses.wrapper(main)
