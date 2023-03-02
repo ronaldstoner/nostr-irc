@@ -28,7 +28,6 @@ async def get_user_input(input_box, relay, privkey, messages, status_bar):
                 # slash command parsing 
                 if user_input[:1] == "/":
                     # Command parsing
-                    messages.addstr(f" * COMMAND: {user_input}\n")
                     command_handler = CommandHandler()
                     command_handler.handle_command(str(user_input), messages)
                 else:

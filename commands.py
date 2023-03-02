@@ -2,7 +2,10 @@ import curses
 import asyncio
 import sys
 
+from nip01 import nip_05_identifiers
+
 class CommandHandler:
+
     def __init__(self):
         self.commands = {
             '/quit': self.handle_quit,
@@ -10,6 +13,7 @@ class CommandHandler:
             '/part': self.handle_part,
             '/slap': self.handle_slap,
         }
+
 
     def handle_command(self, command_string, messages):
         parts = command_string.split(' ')
@@ -21,12 +25,14 @@ class CommandHandler:
         if command in self.commands:
             self.commands[command](arg, messages)
 
+
     async def stop_tasks(self, tasks):
         # Cancel all tasks
         for task in tasks:
             task.cancel()
         # Wait for tasks to finish
         await asyncio.gather(*tasks, return_exceptions=True)
+
 
     # Quit command - not working gracefully atm TODO: fix this
     def handle_quit(self, arg, messages):
@@ -52,25 +58,28 @@ class CommandHandler:
 
     # Who command
     def handle_who(self, arg, messages):
-        # Implement quit logic here
         if not arg:
-            messages.addstr(f"\nWHO COMMAND ENTERED FOR ALL\n")
-            messages.refresh()
+            # Top 20 recent users plus user count
+            top_names = sorted(nip_05_identifiers.items(), key=lambda x: x[1], reverse=True)[:20]
+            remaining_names_tally = len(nip_05_identifiers) - len(top_names)
+            result_string = ', '.join([f'{name}' for pubkey, name in top_names]) + f' and {remaining_names_tally} other users'
+            messages.addstr(f"\n *** Recent Users: {result_string}\n\n", curses.color_pair(1) | curses.A_DIM)
         else:
-            messages.addstr(f"\nWHO COMMAND ENTERED FOR USER: {arg}\n")
+            messages.addstr(f"\n *** WHO COMMAND ENTERED FOR USER: {arg}\n")
             messages.refresh()
-        pass
+
 
     # Part command for NIP-4x
     def handle_part(self, arg, messages):
         # Implement part logic here
-        messages.addstr("\nPART COMMAND ENTERED\n")
+        messages.addstr("\n *** PART COMMAND ENTERED\n")
         messages.refresh()
         pass
+
 
     # Slap command
     def handle_slap(self, arg, messages):
         # Implement part logic here
-        messages.addstr("\nSLAP COMMAND ENTERED\n")
+        messages.addstr("\n *** SLAP COMMAND ENTERED\n")
         messages.refresh()
         pass
