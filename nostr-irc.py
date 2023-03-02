@@ -6,7 +6,7 @@
 version = "0.0.4.2"
 
 # Imports - packages
-import argparse, asyncio, curses, secrets, time, uuid
+import argparse, asyncio, curses, secrets, secp256k1, time, uuid
 
 # Imports - local
 import ui
@@ -40,16 +40,24 @@ def main(stdscr):
     # Load privkey from args, but if not generate a random key for chatting
     privkey = args.privatekey if args.privatekey is not None else secrets.token_bytes(32).hex()
 
-    # Get friendlist - Uses my pubkey as example for now
-    my_pubkey = "0497384b57b43c107a778870462901bf68e0e8583b32e2816563543c059784a4"
-    friendlist = asyncio.run(get_nip02_friends(relay, my_pubkey, messages))
+    # Dervice pubkey from privkey
+    pk = secp256k1.PrivateKey(bytes.fromhex(privkey))
+    publickey = pk.pubkey.serialize()[1:].hex()
+
+    # Get friendlist from pubkey - but only if user is a specifying one
+    if args.privatekey is not None:
+        try:
+            friendlist = asyncio.run(get_nip02_friends(relay, publickey, messages))
+        except:
+            friendlist = []
+    else:
+        friendlist = []
 
     # Call the main_task function with the friendlist
-    asyncio.run(main_task(relay, status_bar, my_pubkey, privkey, time_since, messages, input_box, client_uuid, friendlist))
-
+    asyncio.run(main_task(relay, status_bar, publickey, privkey, time_since, messages, input_box, client_uuid, friendlist))
 
 # asyncio task gather and handler
-async def main_task(relay, status_bar, my_pubkey, privkey, time_since, messages, input_box, client_uuid, friendlist):
+async def main_task(relay, status_bar, publickey, privkey, time_since, messages, input_box, client_uuid, friendlist):
 
     tasks = [
         asyncio.create_task(update_status_bar(relay, status_bar)),
