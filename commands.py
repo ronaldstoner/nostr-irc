@@ -28,6 +28,7 @@ class CommandHandler:
         # Wait for tasks to finish
         await asyncio.gather(*tasks, return_exceptions=True)
 
+    # Quit command - not working gracefully atm TODO: fix this
     def handle_quit(self, arg, messages):
         # Get all running tasks
         #tasks = asyncio.all_tasks()

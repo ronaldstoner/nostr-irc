@@ -38,7 +38,7 @@ def main(stdscr):
     relay = args.relay if args.relay else "wss://nos.lol"
 
     # Load privkey from args, but if not generate a random key for chatting
-    privkey = args.privatekey if args.privatekey is not None else secrets.token_bytes(32)
+    privkey = args.privatekey if args.privatekey is not None else secrets.token_bytes(32).hex()
 
     # Get friendlist - Uses my pubkey as example for now
     my_pubkey = "0497384b57b43c107a778870462901bf68e0e8583b32e2816563543c059784a4"
