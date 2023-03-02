@@ -41,7 +41,7 @@ python nostr-irc.py
 - Active user list?
 - NIP-04 DMs via client?
 - Multiple relays?
-```
+
 
 # Donate
 If you find this script useful or decide to use it in production feel free to donate any spare sats you may have. This goes a long way to fueling the caffeine needed for late night development.
