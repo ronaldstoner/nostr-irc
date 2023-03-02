@@ -1,6 +1,7 @@
 import asyncio
 import curses
 from nip01send import broadcast_signed_event, NostrEvent
+from commands import CommandHandler
 from curses import ascii
 
 relay = "wss://nos.lol" # temp for now until this is a global 
@@ -28,13 +29,22 @@ async def get_user_input(input_box, privkey, messages, status_bar):
                 
                 # create NostrEvent instance
                 event = NostrEvent(privkey, user_input, [])
-
-                # sign the event 
-                signed_event = await event.sign()
                 
-                # send the event
-                response = await broadcast_signed_event(signed_event, relay)
-                #messages.addstr(f" * {response}")
+                # slash command parsing 
+                if user_input[:1] == "/":
+                    # Command parsing
+                    messages.addstr(f" * COMMAND: {user_input}\n")
+                    command_handler = CommandHandler()
+                    command_handler.handle_command(str(user_input), messages)
+                else:
+                    # debug
+                    #messages.addstr(f" * {user_input}\n")
+
+                    # sign the event 
+                    signed_event = await event.sign()
+
+                    # send the event
+                    response = await broadcast_signed_event(signed_event, relay)
 
                 user_input = ''          # buggy    # 
                 input_box.clear()

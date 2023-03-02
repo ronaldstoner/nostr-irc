@@ -31,15 +31,16 @@ client_uuid = uuid.uuid1()
 
 # main function call
 def main(stdscr):
+    
     ui_obj = ui.UI()
     status_bar, messages, input_title, input_line, input_box = ui_obj.run_curses(stdscr)
     time_since = int(time.time()) #- (60 * 60 * 24 * search_days)
     relay = args.relay if args.relay else "wss://nos.lol"
+
     # Load privkey from args, but if not generate a random key for chatting
     privkey = args.privatekey if args.privatekey is not None else secrets.token_bytes(32)
 
-    # Get friendlist
-    # Uses my pubkey as example for now
+    # Get friendlist - Uses my pubkey as example for now
     my_pubkey = "0497384b57b43c107a778870462901bf68e0e8583b32e2816563543c059784a4"
     friendlist = asyncio.run(get_nip02_friends(relay, my_pubkey, messages))
 
@@ -57,7 +58,7 @@ async def main_task(relay, status_bar, my_pubkey, privkey, time_since, messages,
     ]
 
     try:
-        # Run the other tasks in the background
+        # Run the tasks in the background
         await asyncio.gather(*tasks)
 
     except Exception as e:
