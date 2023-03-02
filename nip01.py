@@ -19,8 +19,6 @@ async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uui
     event_filter_list = load_event_filters()
     pubkey_filter_list = load_pubkey_filters()
 
-    #messages.addstr(str(f"FRIENDLIST: {friendlist}"))
-
     while True:
         try:
             async with websockets.connect(relay, ping_interval=ping_keepalive, ping_timeout=ping_timeout) as websocket_notes:
@@ -78,12 +76,12 @@ async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uui
                                     nip_05_identifier = f"{pubkey[:8]}:{pubkey[-8:]}"
                                     color_pair = 3
                             else:
-                                if nip_05_identifiers[pubkey] == f"{pubkey[:8]}:{pubkey[-8:]}":
+                                if nip_05_identifiers[pubkey] == pubkey:
                                     color_pair = 3
                                 else:
                                     color_pair = 4
 
-                            # Get NIP05 Name via Relay
+                            # Update key entry in local NIP05 identifiers
                             nip_05_identifiers[pubkey] = nip_05_identifier
 
                             # Lightning Invoice Parsing & Testing
