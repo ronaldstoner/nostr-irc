@@ -6,10 +6,8 @@ from nip01send import broadcast_signed_event, NostrEvent
 from commands import CommandHandler
 from curses import ascii
 
-relay = "wss://nos.lol" # temp for now until this is a global 
 
-
-async def get_user_input(input_box, privkey, messages, status_bar):
+async def get_user_input(input_box, relay, privkey, messages, status_bar):
     loop = asyncio.get_running_loop()
     user_input = ""
 
@@ -18,10 +16,9 @@ async def get_user_input(input_box, privkey, messages, status_bar):
     curses.echo()
 
     while True:
-        #messages.addstr("IN THE KB LOOP")
         key = await loop.run_in_executor(None, input_box.getch)
-        #if key:
-        #    messages.addstr("KEY PRESSED")
+
+        # User pressed Enter
         if key == 10:
             if user_input:
 
@@ -35,7 +32,7 @@ async def get_user_input(input_box, privkey, messages, status_bar):
                     command_handler = CommandHandler()
                     command_handler.handle_command(str(user_input), messages)
                 else:
-                    # debug
+                    # Debug
                     #messages.addstr(f" * {user_input}\n")
 
                     # sign the event 
@@ -49,13 +46,17 @@ async def get_user_input(input_box, privkey, messages, status_bar):
                 input_box.refresh()
                 messages.refresh()
                 #break
+
         elif key == curses.ascii.BS or key == curses.KEY_BACKSPACE or key == 127:
             # Check for the backspace character
+            
             if user_input:
+                
                 # Remove the last character from the input string
                 user_input = user_input[:-1]
                 # Move the cursor back one character and delete it from the input box
                 input_box.addstr("\b \b")
+        
         elif key == curses.KEY_RESIZE:
             continue
         elif key >= 32 and key <= 126:

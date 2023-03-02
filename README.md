@@ -28,8 +28,9 @@ python nostr-irc.py
   -p PRIVATEKEY, --privatekey PRIVATEKEY
                         The private key for signing messages in hex format
   -r RELAY, --relay RELAY
-                        The secure websocket relay to use (e.g. wss://nos.lol)```
-                        
+                        The secure websocket relay to use (e.g. wss://nos.lol)
+```
+
 # TODO
 - More NIP-01
 - Replies to notes
@@ -47,7 +48,7 @@ If you find this script useful or decide to use it in production feel free to do
 
 ⚡Alby: stoner@getalby.com
 
-# Contributors
+# Honorable Contributors
 If you would like to contribute to the codebase please submit a PR to your local branch. Information will be incoming shortly on what is needed for a successful code PR. 
 
 Contributions made by:
