@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import asyncio
 import curses
 from nip01send import broadcast_signed_event, NostrEvent
