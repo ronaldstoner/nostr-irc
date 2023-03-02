@@ -10,6 +10,7 @@ def load_event_filters():
         print("Could not load event filter list - ", e)
     return event_filter_list
 
+
 def load_pubkey_filters():
     try:
         pubkey_filter_list = []

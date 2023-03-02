@@ -10,9 +10,9 @@ lnd_amount = 0
 lnd_description = None
 nip_05_identifier = None
 nip_05_identifiers = {}
-nip_05_resolution = True
 ping_keepalive = 30
 ping_timeout = 10
+
 
 # Subscribe to note kind=1 from now until forever
 async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uuid, friendlist):
@@ -37,7 +37,8 @@ async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uui
 
                 # Subscribe to websocket relay with search filter
                 messages.addstr(f"\n * Connecting to {relay}...\n\n", curses.color_pair(1) | curses.A_DIM)
-
+                messages.refresh()
+                
                 search_filter = {
                     "kinds": [1],
                     "since": time_since
@@ -58,7 +59,7 @@ async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uui
                         if pubkey not in pubkey_filter_list and not any(f in event_content for f in event_filter_list):
                             nip_05_identifier = nip_05_identifiers.get(pubkey)
 
-                            if nip_05_identifier is None and nip_05_resolution is True:
+                            if nip_05_identifier is None:
                                 # Wait for a future websocket response
                                 future = asyncio.ensure_future(get_nip05(pubkey, relay))
 
@@ -71,13 +72,13 @@ async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uui
                                         nip_05_identifier = result
                                         color_pair = 4
                                     else:
-                                        nip_05_identifier = pubkey[:8]
+                                        nip_05_identifier = f"{pubkey[:8]}:{pubkey[-8:]}"
                                         color_pair = 3
                                 except Exception as e:
-                                    nip_05_identifier = pubkey[:8]
+                                    nip_05_identifier = f"{pubkey[:8]}:{pubkey[-8:]}"
                                     color_pair = 3
                             else:
-                                if nip_05_identifiers[pubkey] == pubkey[:8]:
+                                if nip_05_identifiers[pubkey] == f"{pubkey[:8]}:{pubkey[-8:]}":
                                     color_pair = 3
                                 else:
                                     color_pair = 4
