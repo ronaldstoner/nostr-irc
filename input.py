@@ -10,8 +10,6 @@ relay = "wss://nos.lol" # temp for now until this is a global
 async def get_user_input(input_box, privkey, messages, status_bar):
     loop = asyncio.get_running_loop()
     user_input = ""
-    # Move the cursor to the end of the input title
-    #input_box.move(0, len("<you>: "))
 
     # Enable cursor display and echo user input
     curses.curs_set(1)
@@ -24,9 +22,7 @@ async def get_user_input(input_box, privkey, messages, status_bar):
         #    messages.addstr("KEY PRESSED")
         if key == 10:
             if user_input:
-                #break
-                #messages.addstr(str(f"<local_echo_test>: {user_input}\n"))
-                
+
                 # create NostrEvent instance
                 event = NostrEvent(privkey, user_input, [])
                 
@@ -49,6 +45,7 @@ async def get_user_input(input_box, privkey, messages, status_bar):
                 user_input = ''          # buggy    # 
                 input_box.clear()
                 input_box.refresh()
+                messages.refresh()
                 #break
         elif key == curses.ascii.BS or key == curses.KEY_BACKSPACE or key == 127:
             # Check for the backspace character
@@ -63,8 +60,7 @@ async def get_user_input(input_box, privkey, messages, status_bar):
             user_input += chr(key)
         if not key:
             input_box.refresh()
-        #messages.addstr("AWAITING 0.01")
-        await asyncio.sleep(0.01)
+        await asyncio.sleep(0)
 
     # Disable cursor display and hide user input
     curses.curs_set(0)

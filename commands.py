@@ -54,19 +54,23 @@ class CommandHandler:
     def handle_who(self, arg, messages):
         # Implement quit logic here
         if not arg:
-            messages.addstr(f"WHO COMMAND ENTERED FOR ALL\n")
+            messages.addstr(f"\nWHO COMMAND ENTERED FOR ALL\n")
+            messages.refresh()
         else:
-            messages.addstr(f"WHO COMMAND ENTERED FOR USER: {arg}\n")
+            messages.addstr(f"\nWHO COMMAND ENTERED FOR USER: {arg}\n")
+            messages.refresh()
         pass
 
     # Part command for NIP-4x
     def handle_part(self, arg, messages):
         # Implement part logic here
-        messages.addstr("PART COMMAND ENTERED\n")
+        messages.addstr("\nPART COMMAND ENTERED\n")
+        messages.refresh()
         pass
 
     # Slap command
     def handle_slap(self, arg, messages):
         # Implement part logic here
-        messages.addstr("SLAP COMMAND ENTERED\n")
+        messages.addstr("\nSLAP COMMAND ENTERED\n")
+        messages.refresh()
         pass

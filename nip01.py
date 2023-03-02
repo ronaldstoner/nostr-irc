@@ -37,7 +37,8 @@ async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uui
 
                 # Subscribe to websocket relay with search filter
                 messages.addstr(f"\n * Connecting to {relay}...\n\n", curses.color_pair(1) | curses.A_DIM)
-
+                messages.refresh()
+                
                 search_filter = {
                     "kinds": [1],
                     "since": time_since
