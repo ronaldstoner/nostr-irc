@@ -65,7 +65,10 @@ def main(stdscr):
     status_bar, messages, input_title, input_line, input_box = ui_obj.run_curses(stdscr, publickey, nip_05_identifier)
 
     # Call the main_task function with the friendlist
-    asyncio.run(main_task(relay, status_bar, publickey, privkey, time_since, messages, input_box, client_uuid, friendlist))
+    try:
+        asyncio.run(main_task(relay, status_bar, publickey, privkey, time_since, messages, input_box, client_uuid, friendlist))
+    except asyncio.exceptions.CancelledError:
+        pass
 
 # asyncio task gather and handler
 async def main_task(relay, status_bar, publickey, privkey, time_since, messages, input_box, client_uuid, friendlist):
