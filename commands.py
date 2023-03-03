@@ -26,34 +26,28 @@ class CommandHandler:
             self.commands[command](arg, messages)
 
 
-    async def stop_tasks(self, tasks):
+    def stop_tasks(self, tasks):
         # Cancel all tasks
         for task in tasks:
             task.cancel()
-        # Wait for tasks to finish
-        await asyncio.gather(*tasks, return_exceptions=True)
-
 
     # Quit command - not working gracefully atm TODO: fix this
     def handle_quit(self, arg, messages):
         # Get all running tasks
-        #tasks = asyncio.all_tasks()
+        tasks = asyncio.all_tasks()
 
         # Stop all tasks and wait for them to finish
-        #asyncio.run(self.stop_tasks(tasks))
+        self.stop_tasks(tasks)
 
         # Clear and reset the console
-        #messages.clear()
-        #messages.refresh()
+        messages.clear()
+        messages.refresh()
 
         # Exit curses
-        #curses.endwin()
+        curses.endwin()
 
         # Print goodbye message
-        #print("Thank you for using nostr-irc.")
-
-        # Exit the program
-        sys.exit()
+        print("Thank you for using nostr-irc.")
 
 
     # Who command
