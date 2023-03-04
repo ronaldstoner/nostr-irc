@@ -48,8 +48,8 @@ def main(stdscr):
     # Get friendlist from pubkey - but only if user is a specifying one
     if args.privatekey is not None:
         try:
-            friendlist = asyncio.run(get_nip02_friends(relay, publickey, messages))
-        except:
+            friendlist = asyncio.run(get_nip02_friends(relay, publickey211))
+        except Exception as e:
             friendlist = []
     else:
         friendlist = []

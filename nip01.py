@@ -53,6 +53,7 @@ async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uui
                         pubkey = message[2]["pubkey"]
                         event_content = message[2]["content"]
                         event_time = message[2]["created_at"]
+
                         # Event and pubkey filtering
                         if pubkey not in pubkey_filter_list and not any(f in event_content for f in event_filter_list):
                             nip_05_identifier = nip_05_identifiers.get(pubkey)
@@ -109,6 +110,7 @@ async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uui
                             # event_content = filtered_content
 
                             # Highlight friends/following
+                            
                             for item in friendlist:
                                 if pubkey == item:
                                     color_pair = 5

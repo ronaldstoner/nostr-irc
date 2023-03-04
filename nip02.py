@@ -7,7 +7,7 @@ ping_timeout = 10
 friendlist = []
 
 
-async def get_nip02_friends(relay, pubkey, messages):
+async def get_nip02_friends(relay, pubkey):
     search_filter_nip02 = {
         "kinds": [3],
         "authors": [pubkey]
@@ -30,5 +30,5 @@ async def get_nip02_friends(relay, pubkey, messages):
                 return friendlist
 
     except Exception as e:
-        messages.addstr(str(f"NIP02 Error: {e}"))
+        #messages.addstr(str(f"NIP02 Error: {e}"))
         return friendlist
