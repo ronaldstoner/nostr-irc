@@ -10,8 +10,7 @@ lnd_amount = 0
 lnd_description = None
 nip_05_identifier = None
 nip_05_identifiers = {}
-ping_keepalive = 30
-ping_timeout = 10
+relay_sleep = 30
 
 
 # Subscribe to note kind=1 from now until forever
@@ -21,12 +20,11 @@ async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uui
 
     while True:
         try:
-            async with websockets.connect(relay, ping_interval=ping_keepalive, ping_timeout=ping_timeout) as websocket_notes:
+            async with websockets.connect(relay) as websocket_notes:
                 async def keepalive():
                     try:
                         while True:
-                            await websocket_notes.ping()
-                            await asyncio.sleep(ping_keepalive)
+                            await asyncio.sleep(relay_sleep)
                     except:
                         pass
 
@@ -159,7 +157,7 @@ async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uui
             status_bar.erase()
             status_bar.addstr(0, 0, f"Websocket error: {str(e)}. Reconnecting...")
             status_bar.refresh()
-            messages.addstr(f"\n * Connection Lost!\n * Reconnecting to {relay}...", curses.color_pair(1) | curses.A_DIM)
+            messages.addstr(f"\n * Connection Lost!\nError: {e}\n * Reconnecting to {relay}...", curses.color_pair(1) | curses.A_DIM)
             messages.refresh()
             # Wait for some time before attempting to reconnect
             await asyncio.sleep(5)

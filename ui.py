@@ -14,7 +14,7 @@ class UI:
     def run_curses(self, stdscr, publickey, nip_05_identifier):
         self.status_bar = curses.newwin(1, curses.COLS, 0, 0)
         self.status_bar.bkgd(" ", curses.color_pair(2))
-        self.status_bar.scrollok(True)
+        self.status_bar.scrollok(False)
         self.status_bar.refresh()
 
         self.messages = curses.newwin(curses.LINES - 3, curses.COLS, 2, 0)
@@ -32,8 +32,7 @@ class UI:
                 input_title = f"<{self.publickey[:8]}:{self.publickey[-8:]}>: "
             else:
                 input_title = "<you>: "
-        #input_title = f"<{self.publickey}>: "
-        1
+        
         input_title_length = len(input_title)
         self.input_line = curses.newwin(1, curses.COLS, curses.LINES - 1, 0)
         self.input_line.bkgd(" ", curses.color_pair(2))
@@ -42,6 +41,7 @@ class UI:
 
         self.input_box = curses.newwin(1, curses.COLS, curses.LINES - 1, input_title_length)
         self.input_box.bkgd(" ", curses.color_pair(2))
+        self.input_box.scrollok(False)
         self.input_box.refresh()
 
         curses.curs_set(0)
