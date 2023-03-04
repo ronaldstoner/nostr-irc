@@ -13,7 +13,13 @@ async def get_user_input(input_box, relay, privkey, messages, status_bar):
 
     # Enable cursor display and echo user input
     curses.curs_set(1)
-    curses.echo()
+    
+    # Don't echo user input as we will write this ourselves
+    curses.noecho()
+
+    input_box.keypad(1)
+
+
 
     while True:
         key = await loop.run_in_executor(None, input_box.getch)
@@ -53,13 +59,18 @@ async def get_user_input(input_box, relay, privkey, messages, status_bar):
                 
                 # Remove the last character from the input string
                 user_input = user_input[:-1]
+
                 # Move the cursor back one character and delete it from the input box
                 input_box.addstr("\b \b")
+
+                # Refresh the input_box
+                input_box.refresh()
         
         elif key == curses.KEY_RESIZE:
             continue
         elif key >= 32 and key <= 126:
             user_input += chr(key)
+            input_box.addch(key)
         if not key:
             input_box.refresh()
         await asyncio.sleep(0)
