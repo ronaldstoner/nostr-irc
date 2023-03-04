@@ -25,7 +25,8 @@ async def get_nip05(pubkey, uri):
                 # Parse the JSON string
                 pubkey_metadata = json.loads(pubkey_metadata_reply)
                 # Debug
-                #print(f"METADATA: {str(pubkey_metadata[2]['content'])}")
+                #print(f"\n\nMETADATA: {str(pubkey_metadata[2]['content'])}\n")
+                #time.sleep(2)
 
                 json_acceptable_string = pubkey_metadata[2]['content']
                 d = json.loads(json_acceptable_string)

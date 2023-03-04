@@ -44,6 +44,7 @@ async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uui
                 await websocket_notes.send(json.dumps(["REQ", "irc-" + str(client_uuid), search_filter]))
 
                 while True:
+
                     reply = await websocket_notes.recv()
                     message = json.loads(reply)
 
@@ -62,7 +63,7 @@ async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uui
 
                             # If NIP-05 was not found locally, query for it 
                             if nip_05_identifier is None:
-                                
+
                                 # Wait for a future websocket response
                                 future = asyncio.ensure_future(get_nip05(pubkey, relay))
 
