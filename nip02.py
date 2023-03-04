@@ -30,5 +30,5 @@ async def get_nip02_friends(relay, pubkey):
                 return friendlist
 
     except Exception as e:
-        #messages.addstr(str(f"NIP02 Error: {e}"))
+        messages.addstr(str(f"NIP02 Error: {e}"))
         return friendlist

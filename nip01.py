@@ -56,8 +56,11 @@ async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uui
 
                         # Event and pubkey filtering
                         if pubkey not in pubkey_filter_list and not any(f in event_content for f in event_filter_list):
+
+                            # See if NIP-05 name exists in nip_05_identifiers list already
                             nip_05_identifier = nip_05_identifiers.get(pubkey)
 
+                            # If NIP-05 was not found locally, query for it 
                             if nip_05_identifier is None:
                                 # Wait for a future websocket response
                                 future = asyncio.ensure_future(get_nip05(pubkey, relay))
@@ -65,21 +68,35 @@ async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uui
                                 # Wait for the result of the Future
                                 try:
                                     result = await asyncio.wait_for(future, timeout=3)
-
+                                    
+                                    # NIP-05 Found - Use the NIP-05 name
                                     if result is not None:
                                         #messages.addstr(str("NIP05 RESULT" + result))
                                         nip_05_identifier = result
+                                        user_name = nip_05_identifier
                                         color_pair = 4
+
+                                    # No result - use the pubkey
                                     else:
-                                        nip_05_identifier = f"{pubkey[:8]}:{pubkey[-8:]}"
+                                        nip_05_identifier = pubkey
+                                        user_name = f"{nip_05_identifier[:8]}:{nip_05_identifier[-8:]}"
                                         color_pair = 3
+
+                                    # Error handling
                                 except Exception as e:
-                                    nip_05_identifier = f"{pubkey[:8]}:{pubkey[-8:]}"
+                                    nip_05_identifier = pubkey
+                                    user_name = f"{nip_05_identifier[:8]}:{nip_05_identifier[-8:]}"
                                     color_pair = 3
+
+                            # NIP-05 pubkey that was stored as pubkey
                             else:
                                 if nip_05_identifiers[pubkey] == pubkey:
+                                    user_name = f"{nip_05_identifier[:8]}:{nip_05_identifier[-8:]}"
                                     color_pair = 3
+
+                                # Known NIP-05 that is not a pubkey and was already stored locally
                                 else:
+                                    user_name = nip_05_identifier
                                     color_pair = 4
 
                             # Update key entry in local NIP05 identifiers
@@ -109,8 +126,8 @@ async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uui
 
                             # event_content = filtered_content
 
-                            # Highlight friends/following
-                            
+
+                            # Highlight friends/following  
                             for item in friendlist:
                                 if pubkey == item:
                                     color_pair = 5
@@ -118,7 +135,7 @@ async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uui
                             # We have an event that is not blank, push it to message panel
                             if event_content and event_content != '' and event_content != ' ':
                                 messages.addstr(f"[{local_timestamp}] ", curses.color_pair(1) | curses.COLOR_WHITE | curses.A_BOLD)
-                                messages.addstr(f"<{nip_05_identifier}>: ", curses.color_pair(color_pair) | curses.A_BOLD)
+                                messages.addstr(f"<{user_name}>: ", curses.color_pair(color_pair) | curses.A_BOLD)
                                 messages.addstr(str(f"{event_content}\n"))
                                 messages.refresh()
 
@@ -133,6 +150,7 @@ async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uui
                             nip_05_identifier = None
                             lnd_amount = 0
                             lnd_description = None
+                            user_name = None
 
         except websockets.exceptions.ConnectionClosedError as e:
             # Display an error message
