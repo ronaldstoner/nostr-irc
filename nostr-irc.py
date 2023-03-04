@@ -69,6 +69,8 @@ def main(stdscr):
     try:
         asyncio.run(main_task(relay, status_bar, publickey, privkey, time_since, messages, input_box, client_uuid, friendlist))
     except asyncio.exceptions.CancelledError:
+        pass    
+    except KeyboardInterrupt:
         pass
 
 # asyncio task gather and handler
