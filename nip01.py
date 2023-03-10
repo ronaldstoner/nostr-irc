@@ -14,7 +14,7 @@ relay_sleep = 30
 
 
 # Subscribe to note kind=1 from now until forever
-async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uuid, friendlist):
+async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uuid, friendlist, my_pubkey):
     event_filter_list = load_event_filters()
     pubkey_filter_list = load_pubkey_filters()
 
@@ -99,8 +99,18 @@ async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uui
                                     user_name = nip_05_identifier
                                     color_pair = 4
 
+                            # Highlight friends/following  
+                            for item in friendlist:
+                                if pubkey == item:
+                                    color_pair = 5
+
+                            # Highlight self
+                            if pubkey == my_pubkey:
+                                color_pair = 6
+
                             # Update key entry in local NIP05 identifiers
                             nip_05_identifiers[pubkey] = nip_05_identifier
+
 
                             # Lightning Invoice Parsing & Testing
                             test = re.compile('^.*lnbc.*$', re.MULTILINE)
@@ -126,11 +136,6 @@ async def subscribe_to_notes(relay, status_bar, time_since, messages, client_uui
 
                             # event_content = filtered_content
 
-
-                            # Highlight friends/following  
-                            for item in friendlist:
-                                if pubkey == item:
-                                    color_pair = 5
 
                             # We have an event that is not blank, push it to message panel
                             if event_content and event_content != '' and event_content != ' ':

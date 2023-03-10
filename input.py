@@ -11,16 +11,11 @@ from curses import ascii
 async def get_user_input(input_box, relay, privkey, messages, status_bar):
     loop = asyncio.get_running_loop()
     user_input = ""
-
     # Enable cursor display and echo user input
     curses.curs_set(1)
-    
     # Don't echo user input as we will write this ourselves
     curses.noecho()
-
     input_box.keypad(1)
-
-
 
     while True:
         key = await loop.run_in_executor(None, input_box.getch)
@@ -59,7 +54,6 @@ async def get_user_input(input_box, relay, privkey, messages, status_bar):
             # Check for the backspace character
             
             if user_input:
-                
                 # Remove the last character from the input string
                 user_input = user_input[:-1]
 

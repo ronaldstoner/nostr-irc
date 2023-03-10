@@ -80,7 +80,7 @@ async def main_task(relay, status_bar, publickey, privkey, time_since, messages,
 
     tasks = [
         asyncio.create_task(update_status_bar(relay, status_bar)),
-        asyncio.create_task(subscribe_to_notes(relay, status_bar, time_since, messages, client_uuid, friendlist)),
+        asyncio.create_task(subscribe_to_notes(relay, status_bar, time_since, messages, client_uuid, friendlist, publickey)),
         asyncio.create_task(get_user_input(input_box, relay, privkey, messages, status_bar))
     ]
 
