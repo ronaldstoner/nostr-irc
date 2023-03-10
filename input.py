@@ -25,7 +25,7 @@ async def get_user_input(input_box, relay, privkey, messages, status_bar):
         if key == 10:
             if user_input:
                 # Check if user_input matches regex for nsec key - we do not want users posting these
-                if re.search(r'nsec[a-z0-9]{32,64}$', user_input):
+                if re.search(r'nsec[a-z0-9]{16,}', user_input):
                     messages.addstr("\n *** Error: Potential exposure of nsec private key. Message denied.\n\n", curses.color_pair(1) | curses.A_DIM)
                 else:
                     # create NostrEvent instance
