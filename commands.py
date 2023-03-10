@@ -1,5 +1,6 @@
 import curses
 import asyncio
+import os
 import sys
 
 from nip01 import nip_05_identifiers
@@ -45,6 +46,14 @@ class CommandHandler:
 
         # Exit curses
         curses.endwin()
+
+        # Clearing the Screen
+        # Linux/Mac
+        if(os.name == 'posix'):
+           os.system('clear')
+        # Windows
+        else:
+           os.system('cls')
 
         # Print goodbye message
         print("Thank you for using nostr-irc.")

@@ -2,6 +2,7 @@
 
 import asyncio
 import curses
+import re
 from nip01send import broadcast_signed_event, NostrEvent
 from commands import CommandHandler
 from curses import ascii
@@ -10,16 +11,11 @@ from curses import ascii
 async def get_user_input(input_box, relay, privkey, messages, status_bar):
     loop = asyncio.get_running_loop()
     user_input = ""
-
     # Enable cursor display and echo user input
     curses.curs_set(1)
-    
     # Don't echo user input as we will write this ourselves
     curses.noecho()
-
     input_box.keypad(1)
-
-
 
     while True:
         key = await loop.run_in_executor(None, input_box.getch)
@@ -27,36 +23,37 @@ async def get_user_input(input_box, relay, privkey, messages, status_bar):
         # User pressed Enter
         if key == 10:
             if user_input:
-
-                # create NostrEvent instance
-                event = NostrEvent(privkey, user_input, [])
-                
-                # slash command parsing 
-                if user_input[:1] == "/":
-                    # Command parsing
-                    command_handler = CommandHandler()
-                    command_handler.handle_command(str(user_input), messages)
+                # Check if user_input matches regex for nsec key - we do not want users posting these
+                if re.search(r'nsec[a-z0-9]{32,64}$', user_input):
+                    messages.addstr("\n *** Error: Potential exposure of nsec private key. Message denied.\n\n", curses.color_pair(1) | curses.A_DIM)
                 else:
-                    # Debug
-                    #messages.addstr(f" * {user_input}\n")
+                    # create NostrEvent instance
+                    event = NostrEvent(privkey, user_input, [])
+                    
+                    # slash command parsing 
+                    if user_input[:1] == "/":
+                        # Command parsing
+                        command_handler = CommandHandler()
+                        command_handler.handle_command(str(user_input), messages)
+                    else:
+                        # Debug
+                        #messages.addstr(f" * {user_input}\n")
 
-                    # sign the event 
-                    signed_event = await event.sign()
+                        # sign the event 
+                        signed_event = await event.sign()
 
-                    # send the event
-                    response = await broadcast_signed_event(signed_event, relay)
+                        # send the event
+                        response = await broadcast_signed_event(signed_event, relay)
 
-                user_input = ''          # buggy    # 
+                user_input = ''
                 input_box.clear()
                 input_box.refresh()
                 messages.refresh()
-                #break
 
         elif key == curses.ascii.BS or key == curses.KEY_BACKSPACE or key == 127:
             # Check for the backspace character
             
             if user_input:
-                
                 # Remove the last character from the input string
                 user_input = user_input[:-1]
 
