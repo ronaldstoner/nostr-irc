@@ -2,6 +2,7 @@
 
 import asyncio
 import curses
+import json
 import re
 from nip01send import broadcast_signed_event, NostrEvent
 from commands import CommandHandler
@@ -44,6 +45,11 @@ async def get_user_input(input_box, relay, privkey, messages, status_bar):
 
                         # send the event
                         response = await broadcast_signed_event(signed_event, relay)
+                        response_json = json.loads(response[1])
+                        message_status = response_json[2]
+                        if message_status == False:
+                            # PoW needed for message - either PoW relay or you're sending too fast
+                            messages.addstr(f"\n *** Error: Message failed to send: {response_json[3]}\n\n", curses.color_pair(1) | curses.A_DIM)
 
                 user_input = ''
                 input_box.clear()
