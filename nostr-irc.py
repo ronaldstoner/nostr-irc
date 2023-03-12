@@ -4,7 +4,7 @@
 # Project:      nostr-irc
 # Members:      ronaldstoner
 #
-version = "0.0.4.4"
+version = "0.0.4.5"
 
 # Imports - packages
 import argparse, asyncio, curses, secrets, secp256k1, time, uuid
