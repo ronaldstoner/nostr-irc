@@ -71,6 +71,29 @@ async def get_user_input(input_box, relay, privkey, messages, status_bar):
         
         elif key == curses.KEY_RESIZE:
             continue
+
+        # Tab auto-complete 
+        elif key == curses.ascii.TAB:
+            # Tab key pressed - attempt to auto-complete command
+            if user_input.startswith("/"):
+                command = user_input.split()[0]
+                matches = [c for c in CommandHandler().commands if c.startswith(command)]
+                if len(matches) == 1:
+                    # Only one match - auto-complete the command
+                    user_input = matches[0]
+                    input_box.clear()
+                    input_box.addstr(user_input)
+                    input_box.refresh()
+                elif len(matches) > 1:
+                    # Multiple matches - print the options
+                    messages.addstr("\n")
+                    for c in matches:
+                        messages.addstr(c + " ")
+                    messages.addstr("\n")
+            else:
+                # Auto-complete not supported for non-command inputs
+                pass
+        # Normal message characters 
         elif key >= 32 and key <= 126:
             user_input += chr(key)
             input_box.addch(key)
