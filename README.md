@@ -12,6 +12,8 @@ Currently supported:
 - Private Keys (-p on command line, hex only for now)
 - Random Private Key generation
 - Relay specification (-r on command line)
+- Commands
+- Command tab completion 
 
 # Screenshot
 <img src="https://github.com/ronaldstoner/nostr-irc/blob/main/images/poc.png?raw=true" alt="A text console showing spammy pubkeys and their content" width="600">
@@ -31,6 +33,18 @@ python nostr-irc.py
                         The secure websocket relay to use (e.g. wss://nos.lol)
 ```
 
+# Client Commands
+Commands inside the client can be used to interact with various functions. Command tab completition is enable inside the client and will allow you start commands with the / character and autocomplete them with the TAB key on the keyboard.  
+
+```
+- /clear - clears the messages window
+- [PENDING] /join - joins an existing or creates a new chatroom
+- [PENDING] /part - leaves a chatroom
+- /quit - quits the nostr-irc client
+- [PENDING] /slap - slaps another users pubkey with a fish
+- /who - displays a list of recently seen users
+```
+
 # TODO
 - More NIP-01
 - Replies to notes
@@ -38,10 +52,8 @@ python nostr-irc.py
 - NIP-05 verification via domain
 - Allow "read only" type mode for those that want privacy
 - Persist to local db? Storage and performance tradeoffs
-- Active user list?
 - NIP-04 DMs via client?
 - Multiple relays?
-
 
 # Donate
 If you find this script useful or decide to use it in production feel free to donate any spare sats you may have. This goes a long way to fueling the caffeine needed for late night development.
