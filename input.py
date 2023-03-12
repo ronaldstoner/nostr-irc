@@ -4,6 +4,7 @@ import asyncio
 import curses
 import json
 import re
+import time
 from nip01send import broadcast_signed_event, NostrEvent
 from commands import CommandHandler
 from curses import ascii
@@ -13,13 +14,16 @@ async def get_user_input(input_box, relay, privkey, messages, status_bar):
     loop = asyncio.get_running_loop()
     user_input = ""
     # Enable cursor display and echo user input
-    curses.curs_set(1)
+    #curses.curs_set(1)
     # Don't echo user input as we will write this ourselves
     curses.noecho()
     input_box.keypad(1)
 
     while True:
         key = await loop.run_in_executor(None, input_box.getch)
+
+        # Attempt to toggle cursor visibility
+        curses.curs_set(int(time.time() * 2) % 2)
 
         # User pressed Enter
         if key == 10:
@@ -71,6 +75,31 @@ async def get_user_input(input_box, relay, privkey, messages, status_bar):
         
         elif key == curses.KEY_RESIZE:
             continue
+
+        # Tab auto-complete 
+        elif key == curses.ascii.TAB:
+            # Tab key pressed - attempt to auto-complete command
+            if user_input.startswith("/"):
+                command = user_input.split()[0]
+                matches = [c for c in CommandHandler().commands if c.startswith(command)]
+                if len(matches) == 1:
+                    # Only one match - auto-complete the command
+                    user_input = matches[0]
+                    input_box.clear()
+                    input_box.addstr(user_input)
+                    input_box.refresh()
+                elif len(matches) > 1:
+                    # Multiple matches - print the options
+                    messages.addstr("\n *** Valid Commands: ",  curses.color_pair(1) | curses.A_DIM)
+                    for c in matches:
+                        messages.addstr(c + " ", curses.color_pair(1) | curses.A_DIM)
+                    messages.addstr("\n\n")
+                    messages.refresh()
+            else:
+                # Auto-complete not supported for non-command inputs
+                pass
+
+        # Normal message characters 
         elif key >= 32 and key <= 126:
             user_input += chr(key)
             input_box.addch(key)

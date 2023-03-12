@@ -1,3 +1,4 @@
+# TODO - Better handling of errors and message printing
 def load_event_filters():
     try:
         event_filter_list = []

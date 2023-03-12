@@ -1,3 +1,4 @@
+# TODO: Better handling of users that specify pubkey but have no users following 
 import asyncio
 import websockets
 import json
