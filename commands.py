@@ -13,6 +13,7 @@ class CommandHandler:
             '/who': self.handle_who,
             '/part': self.handle_part,
             '/slap': self.handle_slap,
+            '/clear': self.handle_clear,
         }
 
 
@@ -84,5 +85,11 @@ class CommandHandler:
     def handle_slap(self, arg, messages):
         # Implement part logic here
         messages.addstr("\n *** SLAP COMMAND ENTERED\n")
+        messages.refresh()
+        pass
+
+    # Clear command
+    def handle_clear(self, arg, messages):
+        messages.clear()
         messages.refresh()
         pass
