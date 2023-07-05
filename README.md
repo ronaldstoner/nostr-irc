@@ -21,7 +21,7 @@ Currently supported:
 # Install
 It is recommended to install using a virtual environment like so:
 ```
-git clone https://github.com/Shinoa-Fores/nostr-irc.git
+git clone https://github.com/Shinoa-Fores/nostr-cli.git
 
 python3 -m venv nostr-irc/
 
