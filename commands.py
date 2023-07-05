@@ -76,7 +76,7 @@ class CommandHandler:
            os.system('cls')
 
         # Print goodbye message
-        print("Thank you for using nostr-irc.")
+        print("Thank you for using nostr-cli.")
 
     # Slap command
     def handle_slap(self, arg, messages):

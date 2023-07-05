@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python3
 #
-# Project:      nostr-irc
+# Project:      nostr-cli
 # Members:      ronaldstoner
 #
 version = "0.0.4.5"
@@ -96,7 +96,7 @@ async def main_task(relay, status_bar, publickey, privkey, time_since, messages,
 # main curses wrapper
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="nostr-irc")
+    parser = argparse.ArgumentParser(description="nostr-cli")
     parser.add_argument("-p", "--privatekey", help="The private key for signing messages in hex format")
     parser.add_argument("-r", "--relay", help="The secure websocket relay to use (e.g. wss://nos.lol)")
 
