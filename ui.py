@@ -35,7 +35,7 @@ class UI:
         
         input_title_length = len(input_title)
         self.input_line = curses.newwin(1, curses.COLS, curses.LINES - 1, 0)
-        self.input_line.bkgd(" ", curses.color_pair(2))
+        self.input_line.bkgd(" ", curses.color_pair(6))
         self.input_line.addstr(0, 0, input_title, curses.A_BOLD)
         self.input_line.refresh()
 
